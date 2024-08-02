@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.nio.file.Path;
 
 public class Cryption {
 
@@ -17,13 +18,13 @@ public class Cryption {
         File inputFile = new File(task.getFilePath());
         File outFile;
 
-        if(task.getAction() == Task.Action.ENCRYPT) {
-            Files.createDirectory(Paths.get("encrypted"));
-            outFile = new File("encrypted/" + task.getFilePath());
-        } else {
-            Files.createDirectory(Paths.get("decrypted"));
-            outFile = new File( "decrypted/" + task.getFilePath());
-        }
+        String baseDir = task.getAction() == Task.Action.ENCRYPT ? "encrypted" : "decrypted";
+        Path fullPath = Paths.get(baseDir, task.getFilePath());
+
+        // Create all necessary directories
+        Files.createDirectories(fullPath.getParent());
+
+        outFile = fullPath.toFile();
 
         try (FileInputStream fis = new FileInputStream(inputFile);
              FileOutputStream fos = new FileOutputStream(outFile)) {
@@ -37,10 +38,6 @@ public class Cryption {
                 }
                 fos.write(ch);
             }
-
-//            if (!tempFile.renameTo(new File("final.txt"))) {
-//                throw new IOException("Could not rename temp file");
-//            }
 
             LocalDateTime now = LocalDateTime.now();
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
