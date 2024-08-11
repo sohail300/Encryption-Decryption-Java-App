@@ -2,13 +2,13 @@ import java.util.Objects;
 
 public class Task {
 
-    enum Action {
+    public enum Action {
         ENCRYPT,
         DECRYPT
     }
 
-    private String filePath;
     private Action action;
+    private String filePath;
 
     public Task(Action act, String filePath) {
         this.action =act;

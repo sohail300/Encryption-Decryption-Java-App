@@ -2,11 +2,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class Cryption {
 
@@ -18,13 +15,15 @@ public class Cryption {
         File inputFile = new File(task.getFilePath());
         File outFile;
 
-        String baseDir = task.getAction() == Task.Action.ENCRYPT ? "encrypted" : "decrypted";
-        Path fullPath = Paths.get(baseDir, task.getFilePath());
+        // Determine the output file path
+        Path inputPath = Paths.get(task.getFilePath());
+        String action = task.getAction() == Task.Action.ENCRYPT ? "encrypted" : "decrypted";
+        Path outputPath = Paths.get(inputPath.getParent().getParent().toString(), action + "_" + inputPath.getParent().getFileName());
+        Path relativeInputPath = inputPath.getParent().relativize(inputPath);
+        outFile = outputPath.resolve(relativeInputPath).toFile();
 
-        // Create all necessary directories
-        Files.createDirectories(fullPath.getParent());
-
-        outFile = fullPath.toFile();
+        // Ensure the parent directory of the output file exists
+        outFile.getParentFile().mkdirs();
 
         try (FileInputStream fis = new FileInputStream(inputFile);
              FileOutputStream fos = new FileOutputStream(outFile)) {
@@ -39,12 +38,8 @@ public class Cryption {
                 fos.write(ch);
             }
 
-            LocalDateTime now = LocalDateTime.now();
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            System.out.println("Exiting the encryption/decryption at: " + now.format(formatter));
-
             return 0;
-        } catch (IOException | NumberFormatException e) {
+        } catch (IOException e) {
             System.err.println("An error occurred: " + e.getMessage());
             e.printStackTrace();
             return 1;
